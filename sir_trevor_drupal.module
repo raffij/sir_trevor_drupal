@@ -1,0 +1,110 @@
+<?php
+
+/**
+ * @file
+ * Implements the necessary hooks for the editor to work properly.
+ */
+
+/**
+ * Implements hook_permission().
+ */
+function sir_trevor_drupal_permission() {
+  return array(
+    'administer sir_trevor' => array(
+      'title' => t('Administer Sir Trevor'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_element_info().
+ */
+function sir_trevor_drupal_element_info() {
+  $elements['textarea']['#process'] = array('sir_trevor_drupal_textarea');
+  return $elements;
+}
+
+/**
+ * Integrate the editor into a textarea element.
+ */
+function sir_trevor_drupal_textarea($element, $form_state) {
+  static $found = false;
+  if ($element['#id'] == 'edit-body-und-0-value') {
+    $element['#attributes']['class'][] = 'sir-trevor-js';
+    if (!$found) {
+      $settings = array();
+      $path = _sir_trevor_drupal_get_path();
+      drupal_add_css($path . '/js/sir-trevor-js/sir-trevor.css');
+      drupal_add_css($path . '/js/sir-trevor-js/sir-trevor-icons.css');
+      drupal_add_js($path . '/js/underscore/underscore-min.js', array('weight' => 1));
+      drupal_add_js($path . '/js/Eventable/eventable.js', array('weight' => 2));
+      drupal_add_js($path . '/js/sir-trevor-js/sir-trevor.min.js', array('weight' => 3));
+
+      drupal_add_js($path . '/init.js', array('weight' => 4));
+
+      if (module_invoke('imce', 'access')) {
+        $settings['sir_trevor_drupal']['imceURL'] = url('imce');
+      }
+
+      drupal_add_js($settings, 'setting');
+    }
+  }
+  return $element;
+}
+
+// function sir_trevor_drupal_node_view($node, $view_mode) {
+//   return '';
+// }
+
+/**
+ * Implement hook_filter_info().
+ */
+function sir_trevor_drupal_filter_info() {
+  $filters['sir_trevor_js'] = array(
+    'title' => t('Sir Trevor Js filter'),
+    'description' => t('Deals with rendering of Sir Trevor Json'),
+    'prepare callback' => '_sir_trevor_drupal_prepare',
+    'process callback' => '_sir_trevor_drupal_process',
+    'tips callback' => '_sir_trevor_drupal_tips',
+  );
+  return $filters;
+}
+
+function _sir_trevor_drupal_prepare($text, $format) {
+  return $text;
+}
+
+function _sir_trevor_drupal_process($text, $format) {
+  $path = _sir_trevor_drupal_get_path();
+
+  require_once( $path."/lib/Markdown.php" );
+
+  $data = json_decode($text, true);
+  $blocks = $data['data'];
+  $output = "";
+  if (is_array($blocks)) {
+    foreach($blocks as $block) {
+      $filename = path_to_theme()."/blocks/".$block['type'].".php";
+      if (!file_exists($filename)) {
+        $filename = $path."/blocks/".$block['type'].".php";
+      }
+      if (file_exists($filename)) {
+        ob_start();
+        $block = $block['data'];
+        require $filename;
+        $output .= ob_get_clean();
+      }
+    }
+    return $output;
+  }
+  return $text;
+}
+
+function _sir_trevor_drupal_tips($format, $long = FALSE) {
+  return t('Use this to render sir trevor json within a node');
+}
+
+function _sir_trevor_drupal_get_path() {
+  return drupal_get_path('module', 'sir_trevor_drupal');
+}
