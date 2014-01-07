@@ -5,6 +5,11 @@
  * Implements the necessary hooks for the editor to work properly.
  */
 
+function sir_trevor_drupal_init() {
+  libraries_load('underscore');
+  drupal_add_library('underscore', 'underscore');
+}
+
 /**
  * Implements hook_permission().
  */
@@ -37,7 +42,6 @@ function sir_trevor_drupal_textarea($element, $form_state) {
       $path = _sir_trevor_drupal_get_path();
       drupal_add_css($path . '/js/sir-trevor-js/sir-trevor.css');
       drupal_add_css($path . '/js/sir-trevor-js/sir-trevor-icons.css');
-      drupal_add_js($path . '/js/underscore/underscore-min.js', array('weight' => 1));
       drupal_add_js($path . '/js/Eventable/eventable.js', array('weight' => 2));
       drupal_add_js($path . '/js/sir-trevor-js/sir-trevor.min.js', array('weight' => 3));
 
