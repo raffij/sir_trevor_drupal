@@ -65,6 +65,12 @@ jQuery(document).ready(function () {
 
   });
 
+  SirTrevor.setBlockOptions("Tweet", {
+    fetchUrl: function(tweetID) {
+      return "/sir_trevor_drupal/tweet_fetch/"+tweetID;
+    }
+  });
+
   jQuery('.sir-trevor-js').each( function() {
     new SirTrevor.Editor({
       el: jQuery(this)

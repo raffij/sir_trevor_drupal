@@ -15,11 +15,66 @@ function sir_trevor_drupal_init() {
  */
 function sir_trevor_drupal_permission() {
   return array(
-    'administer sir_trevor' => array(
-      'title' => t('Administer Sir Trevor'),
+    'administer sir trevor drupal' => array(
+      'title' => t('Administer Sir Trevor Drupal'),
       'restrict access' => TRUE,
     ),
   );
+}
+
+function sir_trevor_drupal_menu() {
+  $items = array();
+
+  $items['sir_trevor_drupal/tweet_fetch/%'] = array(
+    'page callback' => 'sir_trevor_drupal_fetch_tweet',
+    'page arguments' => array(2),
+    'access arguments' => array('administer sir trevor drupal'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  $items['admin/config/content/sir_trevor_drupal'] = array(
+    'title' => 'Sir Trevor Drupal',
+    'description' => 'Configuration for Sir Trevor Drupal module',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('sir_trevor_drupal_form'),
+    'access arguments' => array('administer sir trevor drupal'),
+    'type' => MENU_NORMAL_ITEM
+  );
+
+  return $items;
+}
+
+function sir_trevor_drupal_form($form, &$form_state) {
+  $form['sir_trevor_drupal_twitter_oauth_access_token'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Twitter oauth access token'),
+    '#default_value' => variable_get('sir_trevor_drupal_twitter_oauth_access_token', ''),
+    '#size' => 60,
+    '#description' => t('The twitter oauth access token from dev.twitter.com')
+  );
+  $form['sir_trevor_drupal_twitter_oauth_access_token_secret'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Twitter oauth access token secret'),
+    '#default_value' => variable_get('sir_trevor_drupal_twitter_oauth_access_token_secret', ''),
+    '#size' => 60,
+    '#description' => t('The twitter oauth access token secret from dev.twitter.com')
+  );
+  $form['sir_trevor_drupal_twitter_consumer_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Twitter consumer key'),
+    '#default_value' => variable_get('sir_trevor_drupal_twitter_consumer_key', ''),
+    '#size' => 60,
+    '#description' => t('The twitter consumer key from dev.twitter.com')
+  );
+  $form['sir_trevor_drupal_twitter_consumer_secret'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Twitter consumer secret'),
+    '#default_value' => variable_get('sir_trevor_drupal_twitter_consumer_secret', ''),
+    '#size' => 60,
+    '#description' => t('The twitter consumer secret from dev.twitter.com')
+  );
+
+  return system_settings_form($form);
 }
 
 /**
@@ -56,10 +111,6 @@ function sir_trevor_drupal_textarea($element, $form_state) {
   }
   return $element;
 }
-
-// function sir_trevor_drupal_node_view($node, $view_mode) {
-//   return '';
-// }
 
 /**
  * Implement hook_filter_info().
@@ -111,4 +162,28 @@ function _sir_trevor_drupal_tips($format, $long = FALSE) {
 
 function _sir_trevor_drupal_get_path() {
   return drupal_get_path('module', 'sir_trevor_drupal');
+}
+
+function sir_trevor_drupal_fetch_tweet($id) {
+  $path = _sir_trevor_drupal_get_path();
+
+  require_once( $path."/lib/TwitterApiExchange.php" );
+
+  $settings = array(
+      'oauth_access_token' => variable_get('sir_trevor_drupal_twitter_oauth_access_token'),
+      'oauth_access_token_secret' => variable_get('sir_trevor_drupal_twitter_oauth_access_token_secret'),
+      'consumer_key' => variable_get('sir_trevor_drupal_twitter_consumer_key'),
+      'consumer_secret' => variable_get('sir_trevor_drupal_twitter_consumer_secret')
+  );
+
+  $url = 'https://api.twitter.com/1.1/statuses/show.json';
+  $getfield = '?id='.$id;
+  $requestMethod = 'GET';
+  $twitter = new TwitterAPIExchange($settings);
+  $response = $twitter->setGetfield($getfield)
+               ->buildOauth($url, $requestMethod)
+               ->performRequest();
+
+  print $response;
+  exit();
 }
