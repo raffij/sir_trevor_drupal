@@ -67,7 +67,7 @@ jQuery(document).ready(function () {
 
   SirTrevor.setBlockOptions("Tweet", {
     fetchUrl: function(tweetID) {
-      return "/sir_trevor_drupal/tweet_fetch/"+tweetID;
+      return Drupal.settings.basePath+"sir_trevor_drupal/tweet_fetch/"+tweetID;
     }
   });
 

@@ -8,6 +8,9 @@
 function sir_trevor_drupal_init() {
   libraries_load('underscore');
   drupal_add_library('underscore', 'underscore');
+  if (variable_get('sir_trevor_drupal_twitter_include_widget_js')) {
+    drupal_add_js('https://platform.twitter.com/widgets.js');
+  }
 }
 
 /**
@@ -72,6 +75,13 @@ function sir_trevor_drupal_form($form, &$form_state) {
     '#default_value' => variable_get('sir_trevor_drupal_twitter_consumer_secret', ''),
     '#size' => 60,
     '#description' => t('The twitter consumer secret from dev.twitter.com')
+  );
+  $form['sir_trevor_drupal_twitter_include_widget_js'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Twitter include widget js'),
+    '#default_value' => variable_get('sir_trevor_drupal_twitter_include_widget_js', 0),
+    '#size' => 60,
+    '#description' => t('Twitter include widget js')
   );
 
   return system_settings_form($form);
